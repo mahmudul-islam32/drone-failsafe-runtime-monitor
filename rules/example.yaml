@@ -1,0 +1,55 @@
+# Example safety rules for PX4 SITL simulation
+# Default polygon is near PX4's default SITL home location (Zurich area)
+
+version: 1
+vehicle_id: sitl-x500
+tick_hz: 10
+
+defaults:
+  debounce_s: 1.0
+  hysteresis: 0.05
+
+rules:
+  # Geofence: keep the vehicle inside this polygon
+  - id: GEOFENCE_POLYGON
+    type: geofence_polygon
+    polygon:
+      - [47.397742, 8.545594]
+      - [47.398742, 8.545594]
+      - [47.398742, 8.547594]
+      - [47.397742, 8.547594]
+    warn_buffer_m: 10
+    on_warn: warn
+    on_violation: rtl
+
+  # Altitude ceiling: 60 metres AGL
+  - id: ALT_CEILING
+    type: altitude_max
+    max_relative_alt_m: 60
+    warn_buffer_m: 5
+    on_warn: warn
+    on_violation: rtl
+
+  # Battery: RTL at 25%
+  - id: BATTERY_RTL
+    type: battery_min
+    threshold_percent: 25
+    on_violation: rtl
+
+  # Battery: Land at 12% (overrides RTL)
+  - id: BATTERY_LAND
+    type: battery_min
+    threshold_percent: 12
+    on_violation: land
+
+  # Telemetry staleness: RTL if position data is older than 2 seconds
+  - id: TELEMETRY_STALE
+    type: telemetry_max_age
+    stream: position
+    max_age_s: 2.0
+    on_violation: rtl
+
+  # Link loss: log only (monitor is blind, PX4 failsafe is the backstop)
+  - id: LINK_LOST
+    type: connection_lost
+    on_violation: log_only

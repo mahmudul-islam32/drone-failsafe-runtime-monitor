@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "failsafe-monitor"
+version = "0.1.0"
+description = "Independent runtime monitor for PX4 drones in SITL simulation"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Mahmudul Islam", email = "mahmudul.islam32@example.com"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+keywords = ["drone", "px4", "mavsdk", "safety", "runtime-monitor", "failsafe"]
+
+dependencies = [
+    "mavsdk>=2.0.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "shapely>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+ros2 = [
+    "rclpy>=1.0.0",
+]
+
+[project.scripts]
+failsafe-monitor = "failsafe_monitor.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/mahmudul-islam32/drone-failsafe-runtime-monitor"
+Repository = "https://github.com/mahmudul-islam32/drone-failsafe-runtime-monitor"
+Documentation = "https://github.com/mahmudul-islam32/drone-failsafe-runtime-monitor/tree/main/docs"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["failsafe_monitor*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["failsafe_monitor"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
