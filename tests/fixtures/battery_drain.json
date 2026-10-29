@@ -1,0 +1,101 @@
+{
+  "description": "Battery drains from 80% to 5% over 10 seconds",
+  "frames": [
+    {
+      "timestamp_s": 0.0,
+      "position": {
+        "latitude_deg": 47.398,
+        "longitude_deg": 8.546,
+        "absolute_altitude_m": 460.0,
+        "relative_altitude_m": 20.0
+      },
+      "battery": {
+        "remaining_percent": 80.0,
+        "voltage_v": 12.4
+      },
+      "flight_mode": "mission",
+      "is_armed": true,
+      "connection_state": "connected"
+    },
+    {
+      "timestamp_s": 2.0,
+      "position": {
+        "latitude_deg": 47.398,
+        "longitude_deg": 8.546,
+        "absolute_altitude_m": 460.0,
+        "relative_altitude_m": 20.0
+      },
+      "battery": {
+        "remaining_percent": 60.0,
+        "voltage_v": 12.0
+      },
+      "flight_mode": "mission",
+      "is_armed": true,
+      "connection_state": "connected"
+    },
+    {
+      "timestamp_s": 4.0,
+      "position": {
+        "latitude_deg": 47.398,
+        "longitude_deg": 8.546,
+        "absolute_altitude_m": 460.0,
+        "relative_altitude_m": 20.0
+      },
+      "battery": {
+        "remaining_percent": 40.0,
+        "voltage_v": 11.6
+      },
+      "flight_mode": "mission",
+      "is_armed": true,
+      "connection_state": "connected"
+    },
+    {
+      "timestamp_s": 6.0,
+      "position": {
+        "latitude_deg": 47.398,
+        "longitude_deg": 8.546,
+        "absolute_altitude_m": 460.0,
+        "relative_altitude_m": 20.0
+      },
+      "battery": {
+        "remaining_percent": 20.0,
+        "voltage_v": 11.2
+      },
+      "flight_mode": "mission",
+      "is_armed": true,
+      "connection_state": "connected"
+    },
+    {
+      "timestamp_s": 8.0,
+      "position": {
+        "latitude_deg": 47.398,
+        "longitude_deg": 8.546,
+        "absolute_altitude_m": 460.0,
+        "relative_altitude_m": 20.0
+      },
+      "battery": {
+        "remaining_percent": 10.0,
+        "voltage_v": 10.8
+      },
+      "flight_mode": "mission",
+      "is_armed": true,
+      "connection_state": "connected"
+    },
+    {
+      "timestamp_s": 10.0,
+      "position": {
+        "latitude_deg": 47.398,
+        "longitude_deg": 8.546,
+        "absolute_altitude_m": 460.0,
+        "relative_altitude_m": 20.0
+      },
+      "battery": {
+        "remaining_percent": 5.0,
+        "voltage_v": 10.5
+      },
+      "flight_mode": "mission",
+      "is_armed": true,
+      "connection_state": "connected"
+    }
+  ]
+}
