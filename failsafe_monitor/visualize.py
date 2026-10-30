@@ -397,20 +397,50 @@ def render_video(result: SimResult, path: Path | str, fps: int = 30) -> Path:
     return Path(path)
 
 
-def render_demo(results: Iterable[SimResult], path: Path | str, fps: int = 30) -> Path:
-    """Render an intro card, every scenario and a summary card into one MP4."""
-    results = list(results)
-    writer = VideoWriter(path, fps)
-    intro = title_card(
+def intro_card(n_scenarios: int) -> Figure:
+    return title_card(
         [
             ("Drone Failsafe Runtime Monitor", 30, TEXT),
             ("An independent safety layer for PX4 drones", 14, MUTED),
             ("telemetry  →  YAML safety rules  →  debounce / escalation  →  RTL / LAND", 12, BLUE),
-            (f"{len(results)} simulated scenarios: geofence · altitude · battery · stale "
+            (f"{n_scenarios} simulated scenarios: geofence · altitude · battery · stale "
              "telemetry · link loss · GPS spike · unconfirmed command", 10, MUTED),
         ],
         subtitle="Educational simulation only - not certified flight software",
     )
+
+
+def render_card(fig: Figure, path: Path | str, seconds: float, fps: int = 30) -> Path:
+    """Render a static card as a short MP4 clip."""
+    writer = VideoWriter(path, fps)
+    writer.write(_fig_rgba(fig), repeat=int(seconds * fps))
+    writer.close()
+    plt.close(fig)
+    return Path(path)
+
+
+def concat_videos(clips: Sequence[Path | str], path: Path | str) -> Path:
+    """Join MP4 clips that share the same encoding settings, without re-encoding."""
+    ffmpeg = shutil.which("ffmpeg")
+    if ffmpeg is None:
+        raise RuntimeError("ffmpeg not found on PATH")
+    path = Path(path)
+    listing = path.with_suffix(".txt")
+    listing.write_text("".join(f"file '{Path(c).resolve()}'\n" for c in clips))
+    try:
+        subprocess.run([ffmpeg, "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
+                        "-i", str(listing), "-c", "copy", "-movflags", "+faststart", str(path)],
+                       check=True)
+    finally:
+        listing.unlink(missing_ok=True)
+    return path
+
+
+def render_demo(results: Iterable[SimResult], path: Path | str, fps: int = 30) -> Path:
+    """Render an intro card, every scenario and a summary card into one MP4."""
+    results = list(results)
+    writer = VideoWriter(path, fps)
+    intro = intro_card(len(results))
     writer.write(_fig_rgba(intro), repeat=int(3.5 * fps))
     plt.close(intro)
     for result in results:

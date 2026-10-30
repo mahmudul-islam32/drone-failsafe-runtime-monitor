@@ -146,8 +146,17 @@ def main(args: list[str] | None = None) -> int:
         print(f"\nOverview: {overview}")
         summary = visualize.summary_card(results)
         summary.savefig(out / "summary.png", facecolor=visualize.BG)
+        visualize.plt.close(summary)
         if parsed.video:
-            demo = visualize.render_demo(results, out / "demo.mp4")
+            videos = out / "videos"
+            intro = visualize.render_card(visualize.intro_card(len(results)),
+                                          videos / "_intro.mp4", 3.5)
+            outro = visualize.render_card(visualize.summary_card(results),
+                                          videos / "_summary.mp4", 5.0)
+            clips = [intro] + [videos / f"{r.scenario.id}.mp4" for r in results] + [outro]
+            demo = visualize.concat_videos(clips, out / "demo.mp4")
+            intro.unlink()
+            outro.unlink()
             print(f"Demo video: {demo}")
     return 0
 
