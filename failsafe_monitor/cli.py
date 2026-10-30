@@ -18,6 +18,8 @@ from .engine import RuleEngine
 from .executor import ActionExecutor, ExecutorConfig
 from .loader import RuleLoadError, load_rules
 from .logging import EventLogger
+from .models import Severity
+from .report import write_report
 from .telemetry import TelemetryConfig, TelemetrySubscriber
 
 
@@ -202,7 +204,14 @@ async def run_monitor(
                         rule_id=violation.rule_id,
                         severity=violation.severity.value,
                         message=violation.message,
-                        values=violation.values,
+                        values={
+                            **violation.values,
+                            **(
+                                {"onset_s": violation.debounce_start_s}
+                                if violation.debounce_start_s is not None
+                                else {}
+                            ),
+                        },
                     )
 
                 action_request = engine.get_action_request(violations)
@@ -215,8 +224,16 @@ async def run_monitor(
 
                     result = await executor.execute(action_request)
 
+                    executed = (
+                        Severity.LAND
+                        if result.request.action == Severity.LAND
+                        else action_request.action
+                    )
+                    if result.success:
+                        engine.record_executed_action(executed)
+
                     event_logger.log_action_executed(
-                        action=action_request.action.value,
+                        action=executed.value,
                         success=result.success,
                         latency_s=result.latency_s,
                         retry_count=result.retry_count,
@@ -229,6 +246,9 @@ async def run_monitor(
 
         await telemetry.stop()
         event_logger.log_shutdown("normal")
+        event_logger.close()
+        report_path = write_report(event_logger.log_file)
+        logger.info("After-flight report: %s", report_path)
 
         summary = event_logger.get_summary()
         logger.info(

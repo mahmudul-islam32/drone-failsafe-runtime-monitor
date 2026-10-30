@@ -9,11 +9,15 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from mavsdk import System
-from mavsdk.action import ActionError
+with warnings.catch_warnings():
+    # mavsdk 3.x warns about its upcoming rename to mavsdk-grpc on import.
+    warnings.simplefilter("ignore", FutureWarning)
+    from mavsdk import System
+    from mavsdk.action import ActionError
 
 from .models import (
     ActionRequest,
