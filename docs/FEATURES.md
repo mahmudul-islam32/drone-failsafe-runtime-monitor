@@ -12,10 +12,11 @@ All features are **Planned**. Priority: Must, Should, Could. Requirement IDs (SR
 | F-06 | Rule engine with debounce, hysteresis and escalation | Must | Planned |
 | F-07 | Action executor with confirmation | Must | Planned |
 | F-08 | Dry-run mode | Should | Planned |
-| F-09 | Event log and after-flight report | Should | Planned |
+| F-09 | Event log and after-flight report | Should | Implemented |
 | F-10 | Automated SITL scenario suite | Must | Planned |
 | F-11 | Recorded-telemetry replay for unit tests | Should | Planned |
 | F-12 | ROS 2 status bridge | Could | Planned |
+| F-13 | Closed-loop simulator, dashboard video and screenshots | Should | Implemented |
 
 ---
 
@@ -71,7 +72,7 @@ All features are **Planned**. Priority: Must, Should, Could. Requirement IDs (SR
 **Description:** JSONL events (rule, values, severity, action, latency), plus a Markdown or HTML summary per flight.
 **User story:** As a reviewer, I want to see exactly why and when the monitor intervened.
 **Acceptance criteria:** Every violation and action has an event, and the report lists time-to-detect and time-to-act.
-**Priority:** Should · **Status:** Planned
+**Priority:** Should · **Status:** Implemented (`failsafe_monitor/report.py`; written automatically when a session ends)
 
 ### F-10: Automated SITL scenario suite
 **Description:** pytest-driven scenarios that start a flight in SITL, induce a violation and assert the monitor's response (SAFETY_RULES.md §4).
@@ -90,3 +91,10 @@ All features are **Planned**. Priority: Must, Should, Could. Requirement IDs (SR
 **User story:** As a ROS user, I want to see monitor state in RViz or `ros2 topic echo`.
 **Acceptance criteria:** Optional dependency. The monitor runs unchanged without ROS 2.
 **Priority:** Could · **Status:** Planned
+
+### F-13: Closed-loop simulator, dashboard video and screenshots
+**Description:** `failsafe-sim` flies scripted scenarios (T-00 to T-10) against the real rule engine and action executor. It uses a kinematic drone model with PX4-like RTL, Land and data-link-loss behaviour, and fault injection (GPS spike, frozen telemetry, link loss, ignored RTL, fast battery drain). It writes JSONL logs, after-flight reports, dashboard PNGs, per-scenario MP4s and a combined demo video. See [SIMULATION.md](SIMULATION.md).
+**User story:** As a developer or reviewer, I want to see and regression-test the monitor's behaviour in seconds, without setting up PX4 and Gazebo.
+**Acceptance criteria:** Deterministic runs. Every scenario has a closed-loop test asserting the expected action. Video rendering needs only matplotlib and ffmpeg.
+**Priority:** Should · **Status:** Implemented
+
