@@ -589,3 +589,20 @@ class TestActionRequest:
         request = engine.get_action_request(violations)
 
         assert request is None
+
+
+class TestRecordExecutedAction:
+    """The executor's actual action is reflected in the engine state."""
+
+    def test_escalated_land_sets_land_state(self) -> None:
+        engine = RuleEngine(RuleConfig(rules=[]))
+        engine.tick(VehicleState(is_armed=True, connection_state=ConnectionState.CONNECTED))
+        engine.record_executed_action(Severity.LAND)
+        assert engine.monitor_state == MonitorState.LAND
+        assert engine.state.highest_action == Severity.LAND
+        assert engine.state.is_latched
+
+    def test_warn_is_ignored(self) -> None:
+        engine = RuleEngine(RuleConfig(rules=[]))
+        engine.record_executed_action(Severity.WARN)
+        assert engine.monitor_state == MonitorState.CONNECTING

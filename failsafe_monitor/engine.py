@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import time
 import warnings
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -82,8 +83,9 @@ class RuleEngine:
     - Escalation: severity only increases during a flight (warn -> rtl -> land)
     """
 
-    def __init__(self, config: RuleConfig) -> None:
+    def __init__(self, config: RuleConfig, clock: Callable[[], float] = time.time) -> None:
         self.config = config
+        self._clock = clock
         self._state = EngineState()
         self._geofence_polygons: dict[str, Polygon] = {}
         self._warn_polygons: dict[str, Polygon] = {}
@@ -152,7 +154,7 @@ class RuleEngine:
         Returns:
             List of violations that have met their debounce requirements
         """
-        now = time.time()
+        now = self._clock()
         self._state.last_tick_s = now
 
         if vehicle_state.is_armed and self._state.flight_start_s is None:
@@ -374,8 +376,8 @@ class RuleEngine:
         violations = []
 
         age: float | None = None
-        if rule.stream == "position":
-            age = state.position_age_s()
+        if rule.stream == "position" and state.position:
+            age = now - state.position.timestamp_s
         elif rule.stream == "battery" and state.battery:
             age = now - state.battery.timestamp_s
         elif rule.stream == "health" and state.health:
@@ -552,7 +554,13 @@ class RuleEngine:
         if not violations:
             if self._state.is_latched:
                 return
-            if self._state.monitor_state == MonitorState.WARNING:
+            pending = any(
+                rs.is_violated or rs.is_warning for rs in self._state.rule_states.values()
+            )
+            if pending and self._state.monitor_state == MonitorState.MONITORING:
+                # A violation is still being debounced: keep showing a warning.
+                self._state.monitor_state = MonitorState.WARNING
+            elif not pending and self._state.monitor_state == MonitorState.WARNING:
                 self._state.monitor_state = MonitorState.MONITORING
             return
 
@@ -567,6 +575,21 @@ class RuleEngine:
             and self._state.monitor_state not in (MonitorState.RTL, MonitorState.LAND)
         ):
             self._state.monitor_state = MonitorState.WARNING
+
+    def record_executed_action(self, action: Severity) -> None:
+        """
+        Inform the engine of the action actually executed.
+
+        The executor may escalate (e.g. RTL not confirmed -> Land); this keeps the
+        latch and monitor state consistent with what the vehicle was told to do.
+        """
+        if action < Severity.RTL:
+            return
+        self._apply_escalation(action)
+        if action >= Severity.LAND:
+            self._state.monitor_state = MonitorState.LAND
+        elif self._state.monitor_state != MonitorState.LAND:
+            self._state.monitor_state = MonitorState.RTL
 
     def get_action_request(self, violations: list[Violation]) -> ActionRequest | None:
         """

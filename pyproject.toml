@@ -42,12 +42,17 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
 ]
+viz = [
+    "matplotlib>=3.7.0",
+    "numpy>=1.24.0",
+]
 ros2 = [
     "rclpy>=1.0.0",
 ]
 
 [project.scripts]
 failsafe-monitor = "failsafe_monitor.cli:main"
+failsafe-sim = "failsafe_monitor.sim_cli:main"
 
 [project.urls]
 Homepage = "https://github.com/mahmudul-islam32/drone-failsafe-runtime-monitor"
